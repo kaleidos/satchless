@@ -9,6 +9,8 @@ DATABASES = {
     },
 }
 
+SECRET_KEY = '5w*h%dm+qwua*7+-)4g=17zt_iv$x)tsu9gxk%66rys*bn9r_8'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.admindocs',

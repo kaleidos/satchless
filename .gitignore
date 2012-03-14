@@ -5,3 +5,6 @@
 *~
 doc/_build
 website/*.db
+build/
+dist/
+satchless.egg-info/
