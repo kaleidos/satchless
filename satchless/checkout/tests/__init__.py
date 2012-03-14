@@ -5,14 +5,15 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.test import Client
 
+from ..app import CheckoutApp
 from ...cart.tests import cart_app
+from ...core.app import view
 from ...order.tests import order_app
 from ...pricing import handler as pricing_handler
 from ...product.tests import DeadParrot
 from ...product.tests.pricing import FiveZlotyPriceHandler
 from ...util.tests import ViewsTestCase
 
-from ..app import CheckoutApp
 
 class BaseCheckoutAppTests(ViewsTestCase):
     class MockUrls:
@@ -28,11 +29,11 @@ class BaseCheckoutAppTests(ViewsTestCase):
         cart.replace_item(self.macaw_blue, 1)
         return cart
 
-    def _get_or_create_cart_for_client(self, client, typ='cart'):
-        self._test_status(reverse('cart:details'),
+    def _get_or_create_cart_for_client(self, client):
+        self._test_status(cart_app.reverse('details'),
                           client_instance=client)
         token = client.session[cart_app.cart_session_key]
-        return self.checkout_app.Cart.objects.get(token=token, typ=typ)
+        return self.checkout_app.Cart.objects.get(token=token, typ=cart_app.cart_type)
 
     def _get_or_create_order_for_client(self, client):
         cart = self._get_or_create_cart_for_client(client)
@@ -67,9 +68,11 @@ class BaseCheckoutAppTests(ViewsTestCase):
 
 class MockCheckoutApp(CheckoutApp):
 
+    cart_type = cart_app.cart_type
     Cart = cart_app.Cart
     Order = order_app.Order
 
+    @view(r'^(?P<order_token>\w+)/$', name='checkout')
     def checkout(self, *args, **kwargs):
         return HttpResponse()
 
@@ -129,4 +132,4 @@ class App(BaseCheckoutAppTests):
                             reverse('order:details', args=(order.token,)))
 
         assertRedirects(self.checkout_app.redirect_order(None),
-                        self.checkout_app.get_no_order_redirect_url())
+                        reverse('cart:details'))
