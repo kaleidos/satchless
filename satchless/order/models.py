@@ -110,9 +110,7 @@ class Order(models.Model):
         return Price(self.payment_price, currency=self.currency)
 
     def get_total(self):
-        payment_price = self.get_payment_price()
-        return payment_price + sum([g.get_total() for g in self.groups.all()],
-                                   Price(0, currency=self.currency))
+        return self.get_payment_price() + self.get_subtotal() 
 
     def create_delivery_group(self, group):
         return self.groups.create(order=self,
@@ -167,9 +165,7 @@ class DeliveryGroup(models.Model):
         return Price(self.delivery_price, currency=self.order.currency)
 
     def get_total(self):
-        delivery_price = self.get_delivery_price()
-        return delivery_price + sum([i.price() for i in self.items.all()],
-                                    Price(0, currency=self.order.currency))
+        return self.get_delivery_price() + self.get_subtotal() 
 
     def add_item(self, variant, quantity, price, product_name=None):
         product_name = product_name or unicode(variant)
