@@ -1,4 +1,11 @@
-import datetime
+import django
+
+if django.VERSION < (1, 4):
+    from datetime.datetime import now
+else: 
+    from django.utils.timezone import  now
+
+
 import decimal
 from django.contrib.auth.models import User
 from django.db import models
@@ -30,9 +37,9 @@ class Order(models.Model):
     # Do not set the status manually, use .set_status() instead.
     status = models.CharField(_('order status'), max_length=32,
                               choices=STATUS_CHOICES, default='checkout')
-    created = models.DateTimeField(default=datetime.datetime.now,
+    created = models.DateTimeField(default=now,
                                    editable=False, blank=True)
-    last_status_change = models.DateTimeField(default=datetime.datetime.now,
+    last_status_change = models.DateTimeField(default=now,
                                    editable=False, blank=True)
     user = models.ForeignKey(User, blank=True, null=True, related_name='+')
     currency = models.CharField(max_length=3)
@@ -93,7 +100,7 @@ class Order(models.Model):
     def set_status(self, new_status):
         old_status = self.status
         self.status = new_status
-        self.last_status_change = datetime.datetime.now()
+        self.last_status_change = now()
         self.save()
         signals.order_status_changed.send(sender=type(self), instance=self,
                                           old_status=old_status)
