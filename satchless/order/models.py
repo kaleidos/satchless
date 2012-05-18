@@ -84,6 +84,10 @@ class Order(models.Model):
         return _('Order #%d') % self.id
 
     def save(self, *args, **kwargs):
+        is_created = False
+        if self.id == None:
+            is_created = True
+
         if not self.token:
             for i in xrange(100):
                 token = ''.join(
@@ -91,7 +95,11 @@ class Order(models.Model):
                 if not type(self).objects.filter(token=token).exists():
                     self.token = token
                     break
-        return super(Order, self).save(*args, **kwargs)
+        result = super(Order, self).save(*args, **kwargs)
+        if is_created:
+            signals.order_status_changed.send(sender=type(self), instance=self,
+                                          old_status=None)
+        return result
 
     @property
     def billing_full_name(self):
