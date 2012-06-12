@@ -6,3 +6,6 @@ def cart_content_changed_listener(sender, instance, **kwargs):
 
 def start_listening():
     cart_content_changed.connect(cart_content_changed_listener, weak=False)
+
+def stop_listening():
+    cart_content_changed.disconnect(cart_content_changed_listener, weak=False)
